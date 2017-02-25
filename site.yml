@@ -1,0 +1,133 @@
+---
+- hosts: all
+  become: true
+  become_method: sudo
+  vars_files:
+    - "./vars/{{ inventory_hostname }}.yml"
+  tasks:
+    - name: Create snort group
+      group:
+        name: snort
+        state: present
+      tags: [ "snort" ]
+
+    - name: Create snort user and assign to group
+      user:
+        name: snort
+        group: snort
+        shell: /usr/sbin/nologin
+      tags: [ "snort" ]
+
+    - name: Create snort directories
+      file: 
+        path: "{{ item }}"
+        state: directory
+        owner: snort
+        group: snort
+        mode: 5755
+      with_items:
+        - /etc/snort
+        - /etc/snort/rules
+        - /etc/snort/rules/iplists
+        - /etc/snort/preproc_rules
+        - /usr/local/lib/snort_dynamicrules
+        - /etc/snort/so_rules
+        - /var/log/snort
+        - /var/log/snort/archived_log
+      tags: [ "snort" ]
+     
+    - name: Touch snort files
+      file: 
+        path: "{{ item }}"
+        state: file
+        owner: snort
+        group: snort
+        mode: 0644
+      with_items:
+        - /etc/snort/rules/iplists/default.blacklist
+        - /etc/snort/rules/iplists/default.whitelist
+        - /etc/snort/rules/local.rules
+        - /etc/snort/rules/snort.rules
+      tags: [ "snort" ]
+
+    - name: Install snort dependancies
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - libpcap
+        - pcre
+        - libdnet
+        - bison
+        - flex
+        - libdaq
+        - zlib
+        - ethtool
+      tags: [ "snort" ]
+
+    # Ethtool?
+    # "post-up ethtool -K {INTERFACE} gro off"
+    # "post-up ethtool -K {INTERFACE} lro off"
+
+    - name: Download snort from source
+      get_url:
+        url: "https://snort.org/downloads/snort/snort-{{ snort.version }}.tar.gz"
+        dest: "{{ snort.src_dir }}/snort-{{ snort.version }}.tar.gz"
+        checksum: "{{ snort.checksum }}"
+      tags: [ "snort" ]
+
+    - name: Extracting snort
+      unarchive:
+        src: "{{ snort.src_dir }}/snort-{{ snort.version }}.tar.gz"
+        dest: "{{ snort.src_dir }}"
+        creates: "{{ snort.src_dir }}/snort-{{ snort.version }}/configure"
+        copy: no
+      tags: [ "snort" ]
+
+    - name: Build snort
+      command: "{{ item }}"
+      args:
+        chdir: "{{ snort.src_dir }}/snort-{{ snort.version }}"
+        creates: "/usr/local/bin/snort"
+      with_items:
+        - './configure'
+        - 'make'
+        - 'make install'
+      tags: [ "snort" ]
+      register: build
+
+    - name: Build change?
+      debug:
+        msg: "{{ build.changed }}"
+      tags: [ "snort" ]
+
+    - name: Symlink /usr/local/bin/snort > /usr/sbin/snort
+      file:
+        src: /usr/local/bin/snort
+        dest: /usr/sbin/snort
+        owner: root
+        group: root
+        state: link
+      tags: [ "snort" ]
+
+    - name: Copy files from source on a build change
+      shell: "{{ item }}"
+      with_items:
+        - "cp {{ snort.src_dir }}/snort-{{ snort.version }}/etc/*.conf* /etc/snort"
+        - "cp {{ snort.src_dir }}/snort-{{ snort.version }}/etc/*.map /etc/snort"
+        - "cp {{ snort.src_dir }}/snort-{{ snort.version }}/etc/*.dtd /etc/snort"
+        - "cp {{ snort.src_dir }}/snort-{{ snort.version }}/src/dynamic-preprocessors/build/usr/local/lib/snort_dynamicpreprocessor/* /usr/local/lib/snort_dynamicpreprocessor/"
+        - "chown -R snort:snort /etc/snort"
+        - "chown -R snort:snort /usr/local/lib/snort_dynamicpreprocessor"
+      when: build.changed
+      tags: [ "snort" ]
+
+
+#    - name: Configuring snort daemon
+#      template:
+#        src: "etc/snort/snort.conf.j2"
+#        dest: ""
+#        owner: root
+#        group: root
+#        mode: 0600
+#      notify: restart snort 
