@@ -1,0 +1,111 @@
+---
+- name: enable snort
+  systemd:
+    daemon_reload: yes
+    name: "snort"
+    enabled: yes
+  tags: [ "snort" ]
+
+- name: restart snort
+  systemd:
+    daemon_reload: yes
+    name: "snort"
+    state: restarted
+  tags: [ "snort" ]
+
+- name: copy files from source
+  copy:
+    src: "{{ snort.src_dir }}/snort-{{ snort.version }}/etc/{{ item }}"
+    dest: "/etc/snort/{{ item }}"
+    owner: snort
+    group: snort
+    mode: 0644
+  with_items:
+    - "file_magic.conf"
+    - "threshold.conf"
+    - "classification.config"
+    - "reference.config"
+    - "gen-msg.map"
+    - "unicode.map"
+    - "attribute_table.dtd"
+  tags: [ "snort" ]
+
+- name: copy dynamic-preprocessors from source
+  copy:
+    src: "{{ snort.src_dir }}/snort-{{ snort.version }}/src/dynamic-preprocessors/build/usr/local/lib/snort_dynamicpreprocessor/{{ item }}"
+    dest: "/usr/local/lib/snort_dynamicpreprocessor/{{ item }}"
+    owner: snort
+    group: snort
+    mode: 0644
+  with_items:
+    - libsf_dce2_preproc.a
+    - libsf_gtp_preproc.so.0.0.0
+    - libsf_sdf_preproc.so.0
+    - libsf_dce2_preproc.la
+    - libsf_imap_preproc.a
+    - libsf_sdf_preproc.so.0.0.0
+    - libsf_dce2_preproc.so
+    - libsf_imap_preproc.la
+    - libsf_sip_preproc.a
+    - libsf_dce2_preproc.so.0
+    - libsf_imap_preproc.so
+    - libsf_sip_preproc.la
+    - libsf_dce2_preproc.so.0.0.0
+    - libsf_imap_preproc.so.0
+    - libsf_sip_preproc.so
+    - libsf_dnp3_preproc.a
+    - libsf_imap_preproc.so.0.0.0
+    - libsf_sip_preproc.so.0
+    - libsf_dnp3_preproc.la
+    - libsf_modbus_preproc.a
+    - libsf_sip_preproc.so.0.0.0
+    - libsf_dnp3_preproc.so
+    - libsf_modbus_preproc.la
+    - libsf_smtp_preproc.a
+    - libsf_dnp3_preproc.so.0
+    - libsf_modbus_preproc.so
+    - libsf_smtp_preproc.la
+    - libsf_dnp3_preproc.so.0.0.0
+    - libsf_modbus_preproc.so.0
+    - libsf_smtp_preproc.so
+    - libsf_dns_preproc.a
+    - libsf_modbus_preproc.so.0.0.0
+    - libsf_smtp_preproc.so.0
+    - libsf_dns_preproc.la
+    - libsf_pop_preproc.a
+    - libsf_smtp_preproc.so.0.0.0
+    - libsf_dns_preproc.so
+    - libsf_pop_preproc.la
+    - libsf_ssh_preproc.a
+    - libsf_dns_preproc.so.0
+    - libsf_pop_preproc.so
+    - libsf_ssh_preproc.la
+    - libsf_dns_preproc.so.0.0.0
+    - libsf_pop_preproc.so.0
+    - libsf_ssh_preproc.so
+    - libsf_ftptelnet_preproc.a
+    - libsf_pop_preproc.so.0.0.0
+    - libsf_ssh_preproc.so.0
+    - libsf_ftptelnet_preproc.la
+    - libsf_reputation_preproc.a
+    - libsf_ssh_preproc.so.0.0.0
+    - libsf_ftptelnet_preproc.so
+    - libsf_reputation_preproc.la
+    - libsf_ssl_preproc.a
+    - libsf_ftptelnet_preproc.so.0
+    - libsf_reputation_preproc.so
+    - libsf_ssl_preproc.la
+    - libsf_ftptelnet_preproc.so.0.0.0
+    - libsf_reputation_preproc.so.0
+    - libsf_ssl_preproc.so
+    - libsf_gtp_preproc.a
+    - libsf_reputation_preproc.so.0.0.0
+    - libsf_ssl_preproc.so.0
+    - libsf_gtp_preproc.la
+    - libsf_sdf_preproc.a
+    - libsf_ssl_preproc.so.0.0.0
+    - libsf_gtp_preproc.so
+    - libsf_sdf_preproc.la
+    - libsf_gtp_preproc.so.0
+    - libsf_sdf_preproc.so
+  tags: [ "snort" ]
