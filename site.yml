@@ -19,7 +19,7 @@
       tags: [ "snort" ]
 
     - name: Create snort directories
-      file: 
+      file:
         path: "{{ item }}"
         state: directory
         owner: snort
@@ -33,13 +33,13 @@
         - /usr/local/lib/snort_dynamicrules
         - /etc/snort/so_rules
         - /var/log/snort
-        - /var/log/snort/archived_log
+        - /var/log/snort/archived_logs
       tags: [ "snort" ]
-     
+
     - name: Touch snort files
-      file: 
+      file:
         path: "{{ item }}"
-        state: file
+        state: touch
         owner: snort
         group: snort
         mode: 0644
@@ -48,6 +48,7 @@
         - /etc/snort/rules/iplists/default.whitelist
         - /etc/snort/rules/local.rules
         - /etc/snort/rules/snort.rules
+        - /var/log/snort/snort.log
       tags: [ "snort" ]
 
     - name: Install snort dependancies
@@ -94,6 +95,7 @@
         - 'make'
         - 'make install'
       tags: [ "snort" ]
+      notify: copy files from source
       register: build
 
     - name: Build change?
@@ -110,24 +112,22 @@
         state: link
       tags: [ "snort" ]
 
-    - name: Copy files from source on a build change
-      shell: "{{ item }}"
-      with_items:
-        - "cp {{ snort.src_dir }}/snort-{{ snort.version }}/etc/*.conf* /etc/snort"
-        - "cp {{ snort.src_dir }}/snort-{{ snort.version }}/etc/*.map /etc/snort"
-        - "cp {{ snort.src_dir }}/snort-{{ snort.version }}/etc/*.dtd /etc/snort"
-        - "cp {{ snort.src_dir }}/snort-{{ snort.version }}/src/dynamic-preprocessors/build/usr/local/lib/snort_dynamicpreprocessor/* /usr/local/lib/snort_dynamicpreprocessor/"
-        - "chown -R snort:snort /etc/snort"
-        - "chown -R snort:snort /usr/local/lib/snort_dynamicpreprocessor"
-      when: build.changed
-      tags: [ "snort" ]
+    - name: Configuring snort daemon
+      template:
+        src: "snort.service.j2"
+        dest: "/lib/systemd/system/snort.service"
+        owner: root
+        group: root
+        mode: 0600
+      notify:
+        - enable snort
+        - restart snort
 
-
-#    - name: Configuring snort daemon
-#      template:
-#        src: "etc/snort/snort.conf.j2"
-#        dest: ""
-#        owner: root
-#        group: root
-#        mode: 0600
-#      notify: restart snort 
+    - name: Generate /etc/snort.conf
+      template:
+        src: "snort.conf.j2"
+        dest: "/etc/snort/snort.conf"
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart snort

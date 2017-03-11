@@ -1,0 +1,12 @@
+description "barnyard2 service"
+stop on runlevel [!2345]
+start on runlevel [2345]
+
+pre-start script
+  while ! mysqladmin ping ; do sleep 1 ; done
+  while [ ! -f /etc/snort/sid-msg.map ]; do sleep 1 ; done
+end script
+
+script
+    exec /usr/sbin/barnyard2 -c /etc/snort/barnyard2.conf -d /var/log/snort -f snort.u2 -w /var/log/snort/barnyard2.waldo -g snort -u snort -D -a /var/log/snort/archived_logs
+end script

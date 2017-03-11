@@ -1,0 +1,25 @@
+---
+- name: enable snort
+  systemd:
+    daemon_reload: yes
+    name: "snort"
+    enabled: yes
+  tags: [ "snort" ]
+
+- name: restart snort
+  systemd:
+    daemon_reload: yes
+    name: "snort"
+    state: restarted
+  tags: [ "snort" ]
+
+- name: copy files from source
+  command: "{{ item }}"
+  with_items:
+    - "cp {{ snort.src_dir }}/snort-{{ snort.version }}/etc/*.conf* /etc/snort"
+    - "cp {{ snort.src_dir }}/snort-{{ snort.version }}/etc/*.map /etc/snort"
+    - "cp {{ snort.src_dir }}/snort-{{ snort.version }}/etc/*.dtd /etc/snort"
+    - "cp {{ snort.src_dir }}/snort-{{ snort.version }}/src/dynamic-preprocessors/build/usr/local/lib/snort_dynamicpreprocessor/* /usr/local/lib/snort_dynamicpreprocessor/"
+    - "chown -R snort:snort /etc/snort"
+    - "chown -R snort:snort /usr/local/lib/snort_dynamicpreprocessor"
+  tags: [ "snort" ]
