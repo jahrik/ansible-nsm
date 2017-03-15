@@ -10,6 +10,10 @@ barnyard2:
   logdir: '/var/log/snort'
   waldo_file: 'var/log/snort/barnyard2.waldo'
 
+pulledpork:
+  version: master
+  src_dir: /tmp
+
 snort:
   version: 2.9.9.0
   src_dir: /tmp

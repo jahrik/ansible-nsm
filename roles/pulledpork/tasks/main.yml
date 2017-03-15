@@ -1,62 +1,61 @@
 ---
-PP_BRANCH     = 'master'.freeze
-OINKCODE      = '404b6c8d819bbcf71ce2f04ea959654115de2f9c'.freeze
-SRC_PATH      = Chef::Config[:file_cache_path]
+- name: Install pulledpork dependancies
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - perl
+    - perl-archive-tar
+    - cron
+    - perl-lwp-protocol-https
+    - perl-crypt-ssleay
+    - perl-switch
+  tags: [ "pulledpork" ]
 
+- name: Install pulledpork dependencies from aur
+  yaourt:
+    name: perl-bytes-random-secure
+    user: "{{ ansible_user }}"
+  tags: [ "pulledpork" ]
 
-include_recipe 'git'
+- name: Download pulledpork from github
+  git:
+    repo: "https://github.com/shirkdog/pulledpork.git"
+    dest: "{{ pulledpork.src_dir}}/pulledpork-{{ pulledpork.version }}"
+    version: "{{ pulledpork.version }}"
+  tags: [ "pulledpork" ]
 
-service 'snort' do
-  supports start: true, stop: true, status: true, restart: true
-  action :nothing
-end
-
-# PulledPork dependencies
-%w(
-  libcrypt-ssleay-perl
-  liblwp-useragent-determined-perl
-).each do |pkg|
-  package pkg
-end
-
-# Install PulledPork from source
-git "#{SRC_PATH}/pulledpork-#{PP_BRANCH}" do
-  repository 'https://github.com/shirkdog/pulledpork.git'
-  reference PP_BRANCH
-  action :sync
-end
-
-execute 'Configure PulledPork' do
-  cwd "#{SRC_PATH}/pulledpork-#{PP_BRANCH}"
-  command <<-EOF
-    cp pulledpork.pl /usr/local/bin
-    chmod +x /usr/local/bin/pulledpork.pl
-    cp etc/*.conf /etc/snort
-  EOF
-  creates '/usr/local/bin/pulledpork.pl'
-  action :run
-end
-
-template '/etc/snort/pulledpork.conf' do
-  source 'pulledpork.conf.erb'
-  owner 'snort'
-  group 'snort'
-  mode '0644'
-  variables(
-    oinkcode: OINKCODE
-  )
-  notifies :run, 'execute[update-rules]', :immediate
-end
-
-execute 'update-rules' do
-  command '/usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l'
-  action :nothing
-  notifies :restart, 'service[snort]', :immediate
-end
-
-cron 'update-rules' do
-  hour '5'
-  minute '0'
-  command '/usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l'
-end
-
+#execute 'Configure PulledPork' do
+#  cwd "#{SRC_PATH}/pulledpork-#{PP_BRANCH}"
+#  command <<-EOF
+#    cp pulledpork.pl /usr/local/bin
+#    chmod +x /usr/local/bin/pulledpork.pl
+#    cp etc/*.conf /etc/snort
+#  EOF
+#  creates '/usr/local/bin/pulledpork.pl'
+#  action :run
+#end
+#
+#template '/etc/snort/pulledpork.conf' do
+#  source 'pulledpork.conf.erb'
+#  owner 'snort'
+#  group 'snort'
+#  mode '0644'
+#  variables(
+#    oinkcode: OINKCODE
+#  )
+#  notifies :run, 'execute[update-rules]', :immediate
+#end
+#
+#execute 'update-rules' do
+#  command '/usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l'
+#  action :nothing
+#  notifies :restart, 'service[snort]', :immediate
+#end
+#
+#cron 'update-rules' do
+#  hour '5'
+#  minute '0'
+#  command '/usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l'
+#end
+#

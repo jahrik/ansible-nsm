@@ -6,4 +6,5 @@
     - "./vars/{{ inventory_hostname }}.yml"
   roles:
     - snort
+    - pulledpork
   tasks:
