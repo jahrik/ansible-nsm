@@ -15,7 +15,7 @@ snort:
   src_dir: /tmp
   checksum: md5:fd3012bf36710481d66b40ad046b231d
   interface: '{{ ansible_default_ipv4.interface }}'  #defines snort interface to listen on
-  home_net: any
+  home_net: '{{ ansible_default_ipv4.network }}/24'
   #home_net: 192.168.0.0/16  #define your home_net..if snort_external_net is any then set this to any
   external_net: any
   #external_net: '!$HOME_NET'  #define external networks..if snort_home_net is any then set this to any

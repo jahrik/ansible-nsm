@@ -1,0 +1,129 @@
+---
+
+# - name: install dependencies
+
+
+#INTERFACE     = node['snort']['interface']
+#BY2_BRANCH    = node['barnyard2']['branch']
+#BY_CHECKSUM   = node['barnyard2']['checksum']
+#USER          = 'snort'.freeze
+#PASSWORD      = 'snort'.freeze
+#HOST          = 'localhost'.freeze
+#SRC_PATH      = Chef::Config[:file_cache_path]
+#
+#include_recipe 'git'
+#
+#directory '/var/log/barnyard2' do
+#  owner 'snort'
+#  group 'snort'
+#  mode '5755'
+#  action :create
+#end
+#
+#file '/var/log/snort/barnyard2.waldo' do
+#  owner 'snort'
+#  group 'snort'
+#  mode '0644'
+#  action :touch
+#end
+#
+## Barnyard2 dependencies
+#%w(
+#  mysql-server
+#  libmysqlclient-dev
+#  mysql-client
+#  autoconf
+#  libtool
+#).each do |pkg|
+#  package pkg
+#end
+#
+#git "#{SRC_PATH}/barnyard2-#{BY2_BRANCH}" do
+#  repository 'https://github.com/firnsy/barnyard2.git'
+#  reference BY2_BRANCH
+#  action :sync
+#end
+#
+#
+#link '/usr/include/dnet.h' do
+#  to '/usr/include/dumbnet.h'
+#end
+#
+#execute "Install barnyard2-#{BY2_BRANCH}" do
+#  cwd "#{SRC_PATH}/barnyard2-#{BY2_BRANCH}"
+#  command <<-EOF
+#    ./autogen.sh
+#    ./configure --with-mysql --with-mysql-libraries=/usr/lib/x86_64-linux-gnu
+#    make
+#    make install
+#  EOF
+#  creates '/usr/local/bin/barnyard2'
+#end
+#
+#link '/usr/sbin/barnyard2' do
+#  to '/usr/local/bin/barnyard2'
+#end
+#
+#execute 'ldconfig' do
+#  action :nothing
+#  subscribes :run, 'link[/usr/include/dnet.h]', :immediately
+#end
+#
+#template '/etc/snort/barnyard2.conf' do
+#  source 'barnyard2.conf.erb'
+#  owner 'snort'
+#  group 'snort'
+#  mode '0640'
+#  variables(
+#    interface:  INTERFACE,
+#    user:       USER,
+#    password:   PASSWORD,
+#    nost:       HOST
+#  )
+#  # notifies :restart, 'service[barnyard2]', :delayed
+#end
+#
+#execute 'Setup MySQL' do
+#  command <<-EOF
+#    echo 'create database snort;' | mysql
+#    mysql snort < #{SRC_PATH}/barnyard2-#{BY2_BRANCH}/schemas/create_mysql
+#    echo "CREATE USER 'snort'@'localhost' IDENTIFIED BY 'snort';" | mysql
+#    echo "grant create, insert, select, delete, update on snort.* to 'snort'@'localhost';" | mysql
+#  EOF
+#  creates '/var/lib/mysql/snort/'
+#  action :run
+#end
+#
+#case node['platform']
+#when 'ubuntu'
+#
+#  if node['platform_version'] >= '15'
+#    template '/lib/systemd/system/barnyard2.service' do
+#      source 'barnyard2.service.erb'
+#      owner 'root'
+#      group 'root'
+#      mode '0644'
+#      variables(
+#        interface: INTERFACE
+#      )
+#    end
+#
+#  elsif node['platform_version'] < '15'
+#
+#    template '/etc/init/barnyard2.conf' do
+#      source 'barnyard2.init.erb'
+#      owner 'root'
+#      group 'root'
+#      mode '0644'
+#      variables(
+#        interface: INTERFACE
+#      )
+#    end
+#
+#    service 'barnyard2' do
+#      supports start: true, stop: true, status: true, restart: true
+#      action [:enable, :start]
+#    end
+#
+#  end
+#end
