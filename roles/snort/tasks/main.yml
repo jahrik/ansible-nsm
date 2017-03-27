@@ -41,7 +41,7 @@
     - /etc/snort/rules/iplists/default.blacklist
     - /etc/snort/rules/iplists/default.whitelist
     # - /etc/snort/rules/local.rules
-    - /etc/snort/rules/snort.rules
+    # - /etc/snort/rules/snort.rules
     - /var/log/snort/snort.log
   tags: [ "snort" ]
 
