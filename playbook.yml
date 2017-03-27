@@ -3,6 +3,7 @@
   become: true
   become_method: sudo
   vars_files:
+    - "./secrets/{{ inventory_hostname }}.yml"
     - "./vars/{{ inventory_hostname }}.yml"
   roles:
     - snort
