@@ -1,5 +1,4 @@
 ---
-
 barnyard2:
   db_host: localhost  #db host
   db_name: snort  #db name
@@ -9,22 +8,18 @@ barnyard2:
   enable: false  #defines if barnyard2 should be installed and configured
   logdir: '/var/log/snort'
   waldo_file: 'var/log/snort/barnyard2.waldo'
-
 pulledpork:
   config: true  #defines if pulledpork should be configured
   version: master
   src_dir: /tmp
-  # dl_package: 'oinkmaster-2.0.tar.gz'
-  # dl_url: 'http://prdownloads.sourceforge.net/oinkmaster'
   # rules_url: 'http://rules.emergingthreats.net/open/suricata/emerging.rules.tar.gz'
-
 snort:
   version: 2.9.9.0
-  src_dir: /tmp
   checksum: md5:fd3012bf36710481d66b40ad046b231d
+  src_dir: /tmp
+  daq_version: 2.0.6
   interface: '{{ ansible_default_ipv4.interface }}'  #defines snort interface to listen on
   home_net: '{{ ansible_default_ipv4.network }}/24'
-  #home_net: 192.168.0.0/16  #define your home_net..if snort_external_net is any then set this to any
   external_net: any
   #external_net: '!$HOME_NET'  #define external networks..if snort_home_net is any then set this to any
   rule_path: /etc/snort/rules
@@ -38,7 +33,6 @@ snort:
   community_rules_package: 'community-rules.tar.gz'
   community_rules_url: 'https://snort.org/downloads/community'
   config_snort: true  #defines if snort should be configured
-  daq_version: 2.0.6
   options: ''  #define additional snort options to pass to startup
   output_syslog: true  #defines if alerts should be sent to syslog
   send_stats: true  #true/false
