@@ -11,8 +11,12 @@ barnyard2:
   waldo_file: 'var/log/snort/barnyard2.waldo'
 
 pulledpork:
+  config: true  #defines if pulledpork should be configured
   version: master
   src_dir: /tmp
+  # dl_package: 'oinkmaster-2.0.tar.gz'
+  # dl_url: 'http://prdownloads.sourceforge.net/oinkmaster'
+  # rules_url: 'http://rules.emergingthreats.net/open/suricata/emerging.rules.tar.gz'
 
 snort:
   version: 2.9.9.0
@@ -33,19 +37,16 @@ snort:
   dynamicdetection_directory: /usr/local/lib/snort_dynamicrules/  
   community_rules_package: 'community-rules.tar.gz'
   community_rules_url: 'https://snort.org/downloads/community'
-  config_oinkmaster: false  #defines if oinkmaster should be configured
   config_snort: true  #defines if snort should be configured
   daq_version: 2.0.6
-  oinkmaster_dl_package: 'oinkmaster-2.0.tar.gz'
-  oinkmaster_dl_url: 'http://prdownloads.sourceforge.net/oinkmaster'
-  oinkmaster_rules_url: 'http://rules.emergingthreats.net/open/suricata/emerging.rules.tar.gz'
   options: ''  #define additional snort options to pass to startup
   output_syslog: true  #defines if alerts should be sent to syslog
   send_stats: true  #true/false
   startup: boot
   stats_threshold: 1
-  rules:  #These rules are installed by default
+  rules:
     - local.rules
+    - snort.rules
     #- app-detect.rules
     #- attack-responses.rules
     #- backdoor.rules
