@@ -1,0 +1,12 @@
+---
+- name: restart snort
+  systemd:
+    daemon_reload: yes
+    name: "snort"
+    state: restarted
+  tags: [ "pulledpork" ]
+
+- name: update rules
+  shell: '/usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l'
+  notify:
+    - restart snort

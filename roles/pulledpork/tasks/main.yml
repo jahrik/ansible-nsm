@@ -25,37 +25,42 @@
     version: "{{ pulledpork.version }}"
   tags: [ "pulledpork" ]
 
-#execute 'Configure PulledPork' do
-#  cwd "#{SRC_PATH}/pulledpork-#{PP_BRANCH}"
-#  command <<-EOF
-#    cp pulledpork.pl /usr/local/bin
-#    chmod +x /usr/local/bin/pulledpork.pl
-#    cp etc/*.conf /etc/snort
-#  EOF
-#  creates '/usr/local/bin/pulledpork.pl'
-#  action :run
-#end
-#
-#template '/etc/snort/pulledpork.conf' do
-#  source 'pulledpork.conf.erb'
-#  owner 'snort'
-#  group 'snort'
-#  mode '0644'
-#  variables(
-#    oinkcode: OINKCODE
-#  )
-#  notifies :run, 'execute[update-rules]', :immediate
-#end
-#
-#execute 'update-rules' do
-#  command '/usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l'
-#  action :nothing
-#  notifies :restart, 'service[snort]', :immediate
-#end
-#
-#cron 'update-rules' do
-#  hour '5'
-#  minute '0'
-#  command '/usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l'
-#end
-#
+- name: Copy pulledpork.pl
+  copy:
+    src: "{{ pulledpork.src_dir}}/pulledpork-{{ pulledpork.version }}/pulledpork.pl"
+    dest: "/usr/local/bin/pulledpork.pl"
+    owner: root
+    group: root
+    mode: 0755
+  tags: [ "pulledpork" ]
+
+- name: Copy pulledpork conf files
+  copy:
+    src: "{{ pulledpork.src_dir}}/pulledpork-{{ pulledpork.version }}/etc/{{ item }}"
+    dest: "/etc/snort/{{ item }}"
+    owner: snort
+    group: snort
+    mode: 0644
+  with_items:
+    - disablesid.conf
+    - dropsid.conf
+    - enablesid.conf
+    - modifysid.conf
+  tags: [ "pulledpork" ]
+
+- name: Generate /etc/snort/pulledpork.conf
+  template:
+    src: "pulledpork.conf.j2"
+    dest: "/etc/snort/pulledpork.conf"
+    owner: snort
+    group: snort
+    mode: 0644
+  notify:
+    - update rules
+
+- name: update rules every morning at 9
+  cron:
+    name: "update rules"
+    minute: "0"
+    hour: "9"
+    job: "/usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l"
