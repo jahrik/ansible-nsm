@@ -6,7 +6,7 @@
     - "./secrets/{{ inventory_hostname }}.yml"
     - "./vars/{{ inventory_hostname }}.yml"
   roles:
+    - bro
     - snort
     - pulledpork
-    - bro
   tasks:
