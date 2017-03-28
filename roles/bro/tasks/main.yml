@@ -1,0 +1,82 @@
+---
+
+- name: Install bro dependancies
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - cmake
+    - swig
+    - cron
+  tags: [ "bro" ]
+
+- name: Download bro from github
+  git:
+    repo: "git://git.bro.org/bro"
+    dest: "/usr/src/bro"
+    version: "master"
+    recursive: true
+  tags: [ "bro" ]
+
+- name: Build bro
+  command: "{{ item }}"
+  args:
+    chdir: "/usr/src/bro"
+    creates: "/usr/local/bro"
+  with_items:
+    - './configure'
+    - 'make'
+    - 'make install'
+  tags: [ "bro" ]
+
+- name: Create bro log dir
+  file:
+    path: "{{ bro_log_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  tags: [ "bro" ]
+
+- name: Generate /usr/local/bro/etc/node.cfg
+  template:
+    src: "node.cfg.j2"
+    dest: "/usr/local/bro/etc/node.cfg"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - broctl install
+    - broctl restart
+  tags: [ "bro" ]
+
+- name: Generate /usr/local/bro/etc/networks.cfg
+  template:
+    src: "networks.cfg.j2"
+    dest: "/usr/local/bro/etc/networks.cfg"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - broctl install
+    - broctl restart
+  tags: [ "bro" ]
+
+- name: Generate /usr/local/bro/etc/broctl.cfg
+  template:
+    src: "broctl.cfg.j2"
+    dest: "/usr/local/bro/etc/broctl.cfg"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - broctl install
+    - broctl restart
+  tags: [ "bro" ]
+
+- name: Add cron entry to run broctl every 5 minutes
+  cron:
+    name: "run broctl cron every 5 minutes"
+    minute: "5"
+    job: "/usr/local/bro/bin/broctl cron"
+  tags: [ "bro" ]

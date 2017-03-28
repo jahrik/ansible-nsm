@@ -1,4 +1,6 @@
 ---
+bro_interface: '{{ ansible_default_ipv4.interface }}'
+bro_log_dir: /var/log/bro
 barnyard2:
   db_host: localhost  #db host
   db_name: snort  #db name

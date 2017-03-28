@@ -8,4 +8,5 @@
   roles:
     - snort
     - pulledpork
+    - bro
   tasks:
