@@ -117,6 +117,7 @@
     mode: 0644
   notify:
     - restart snort
+  tags: [ "snort" ]
 
 - name: Configuring snort daemon
   template:
@@ -128,6 +129,7 @@
   notify:
     - enable snort
     - restart snort
+  tags: [ "snort" ]
 
 - name: Generate /etc/snort.conf
   template:
@@ -137,3 +139,6 @@
     group: snort
     mode: 0644
   notify: restart snort
+  tags:
+    - snort
+    - config
