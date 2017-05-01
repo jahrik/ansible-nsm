@@ -8,6 +8,7 @@
     - cmake
     - swig
     - cronie
+    - postfix
   tags: [ "bro" ]
 
 - name: Download bro from github
