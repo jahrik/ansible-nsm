@@ -7,7 +7,7 @@
   with_items:
     - cmake
     - swig
-    - cron
+    - cronie
   tags: [ "bro" ]
 
 - name: Download bro from github
