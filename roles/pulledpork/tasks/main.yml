@@ -5,8 +5,8 @@
     state: present
   with_items:
     - perl
-    - perl-archive-tar
-    - cron
+    # - perl-archive-tar
+    - cronie
     - perl-lwp-protocol-https
     - perl-crypt-ssleay
     - perl-switch
