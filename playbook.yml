@@ -11,4 +11,6 @@
     - bro
     - snort
     - pulledpork
+    - barnyard2
+    - conky
   tasks:
