@@ -1,7 +1,78 @@
 ---
+- name: Install barnyard2 dependancies
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - git
+    - mariadb
+    - mariadb-clients
+    - autoconf
+    - libtool
+  tags: [ "barnyard2" ]
 
-# - name: install dependencies
+# - name: Install barnyard2 dependencies from aur
+#   yaourt:
+#     name: libmysqlclient
+#     user: "{{ ansible_user }}"
+#   tags: [ "barnyard2" ]
 
+- name: config barnyard2 dir
+  file:
+    path: /var/log/barnyard2
+    state: directory
+    owner: snort
+    group: snort
+    mode: 5755
+
+# - name: Download barnyard2 from github
+#   git:
+#     repo: "https://github.com/shirkdog/barnyard2.git"
+#     dest: "{{ barnyard2.src_dir}}/barnyard2-{{ barnyard2.version }}"
+#     version: "{{ barnyard2.version }}"
+#   tags: [ "barnyard2" ]
+#
+# - name: Copy barnyard2.pl
+#   copy:
+#     src: "{{ barnyard2.src_dir}}/barnyard2-{{ barnyard2.version }}/barnyard2.pl"
+#     dest: "/usr/local/bin/barnyard2.pl"
+#     owner: root
+#     group: root
+#     mode: 0755
+#   tags: [ "barnyard2" ]
+#
+# - name: Copy barnyard2 conf files
+#   copy:
+#     src: "{{ barnyard2.src_dir}}/barnyard2-{{ barnyard2.version }}/etc/{{ item }}"
+#     dest: "/etc/snort/{{ item }}"
+#     owner: snort
+#     group: snort
+#     mode: 0644
+#   with_items:
+#     - disablesid.conf
+#     - dropsid.conf
+#     - enablesid.conf
+#     - modifysid.conf
+#   tags: [ "barnyard2" ]
+#
+# - name: Generate /etc/snort/barnyard2.conf
+#   template:
+#     src: "barnyard2.conf.j2"
+#     dest: "/etc/snort/barnyard2.conf"
+#     owner: snort
+#     group: snort
+#     mode: 0644
+#   notify:
+#     - update rules
+#
+# - name: update rules every morning at 9
+#   cron:
+#     name: "update rules"
+#     minute: "0"
+#     hour: "9"
+#     job: "/usr/local/bin/barnyard2.pl -c /etc/snort/barnyard2.conf -l"
+
+################################################################################
 
 #INTERFACE     = node['snort']['interface']
 #BY2_BRANCH    = node['barnyard2']['branch']
@@ -127,3 +198,4 @@
 #
 #  end
 #end
+
