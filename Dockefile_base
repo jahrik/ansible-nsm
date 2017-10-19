@@ -1,0 +1,20 @@
+FROM tutum/apache-php
+MAINTAINER jahrik <jahrik@gmail.com>
+
+ARG BASE_VERSION=1.4.5
+ENV BASE_VERSION=$BASE_VERSION
+
+RUN apt-get update
+RUN apt-get install -yq libphp-adodb
+RUN rm -rf /var/lib/apt/lists/*
+
+RUN sed -i "s|error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT|error_reporting = E_ALL \& ~E_NOTICE|i" /etc/php5/apache2/php.ini
+
+WORKDIR /tmp
+# RUN wget https://sourceforge.net/projects/secureideas/files/BASE/base-$BASE_VERSION/base-$BASE_VERSION.tar.gz
+COPY base-$BASE_VERSION.tar.gz .
+RUN tar -zxf base-$BASE_VERSION.tar.gz
+RUN rm -fr /app
+RUN cp -r base-$BASE_VERSION /app
+
+WORKDIR /app
