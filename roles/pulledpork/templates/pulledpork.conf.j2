@@ -134,7 +134,7 @@ config_path=/etc/snort/snort.conf
 # OpenBSD-5-2, OpenBSD-5-3
 # OpenSUSE-11-4, OpenSUSE-12-1
 # Slackware-13-1
-distro={{ ohai_platform_family }}-{{ ohai_platform_version }}
+distro={{ ansible_os_family }}
 
 #######  This next section is optional, but probably pretty useful to you.
 #######  Please read thoroughly!
