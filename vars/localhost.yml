@@ -2,26 +2,29 @@
 bro_interface: '{{ ansible_default_ipv4.interface }}'
 bro_log_dir: /var/log/bro
 barnyard2:
-  db_host: localhost  #db host
+  version: master
+  src_dir: /usr/local/src
+  db_host: 127.0.0.1  #db host
   db_name: snort  #db name
   db_pass: snort  #db password
   db_user: snort  #db user
   db_type: mysql  #defines the DB type...options are mysql or mariadb
-  enable: false  #defines if barnyard2 should be installed and configured
-  logdir: '/var/log/snort'
-  waldo_file: 'var/log/snort/barnyard2.waldo'
+  enable: true  #defines if barnyard2 should be installed and configured
+  log_dir: /var/log/snort
+  waldo_file: /var/log/snort/barnyard2.waldo
+  archive_dir: /var/log/snort/archived_logs
 pulledpork:
   config: true  #defines if pulledpork should be configured
   version: master
-  src_dir: /tmp
+  src_dir: /usr/local/src
   # rules_url: 'http://rules.emergingthreats.net/open/suricata/emerging.rules.tar.gz'
 snort:
-  version: 2.9.9.0
-  checksum: md5:fd3012bf36710481d66b40ad046b231d
-  src_dir: /tmp
+  version: 2.9.11
+  checksum: md5:4f3ee0c2ad330e487273016efd0c9d64
+  src_dir: /usr/local/src
   daq_version: 2.0.6
-  interface: '{{ ansible_default_ipv4.interface }}'  #defines snort interface to listen on
-  home_net: '{{ ansible_default_ipv4.network }}/24'
+  interface: "{{ ansible_default_ipv4.interface }}"  #defines snort interface to listen on
+  home_net: "{{ ansible_default_ipv4.network }}/24"
   external_net: any
   #external_net: '!$HOME_NET'  #define external networks..if snort_home_net is any then set this to any
   rule_path: /etc/snort/rules
