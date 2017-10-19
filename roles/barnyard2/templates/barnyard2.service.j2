@@ -4,7 +4,7 @@ After=syslog.target network.target
  
 [Service]
 Type=simple
-ExecStart=/usr/sbin/barnyard2 -c /etc/snort/barnyard2.conf -d /var/log/snort -f snort.u2 -q -w /var/log/snort/barnyard2.waldo -g snort -u snort -D -a /var/log/snort/archived_logs
+ExecStart=/usr/sbin/barnyard2 -c /etc/snort/barnyard2.conf -d {{ barnyard2.log_dir }} -f snort.u2 -q -w {{ barnyard2.waldo_file }} -g snort -u snort -D -a {{ barnyard2.archive_dir }}
 Restart=always
  
 [Install]

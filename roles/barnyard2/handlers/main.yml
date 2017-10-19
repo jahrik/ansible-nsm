@@ -1,0 +1,14 @@
+---
+- name: enable barnyard2
+  systemd:
+    daemon_reload: yes
+    name: "barnyard2"
+    enabled: yes
+  tags: [ "barnyard2" ]
+
+- name: restart barnyard2
+  systemd:
+    daemon_reload: yes
+    name: "barnyard2"
+    state: restarted
+  tags: [ "barnyard2" ]

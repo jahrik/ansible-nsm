@@ -371,6 +371,6 @@ output alert_fast: stdout
 # output alert_fwsam: snortsambox/idspassword
 # output alert_fwsam: fw1.domain.tld:898/mykey
 # output alert_fwsam: 192.168.0.1/borderfw  192.168.1.254/wanfw
-#
-output database: log, mysql, user={{ barnyard2.db_user }} password={{ barnyard2.db_pass }} dbname=snort host={{ harnyard2.db_host }} sensor name={{ ansible_hostname }}
+
+output database: log, mysql, user={{ barnyard2.db_user }} password={{ barnyard2.db_pass }} dbname=snort host={{ barnyard2.db_host }} sensor name={{ ansible_hostname }}
 

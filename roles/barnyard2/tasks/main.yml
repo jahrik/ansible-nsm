@@ -5,8 +5,6 @@
     state: present
   with_items:
     - git
-    - mariadb
-    - mariadb-clients
     - autoconf
     - libtool
   tags: [ "barnyard2" ]
@@ -17,185 +15,91 @@
 #     user: "{{ ansible_user }}"
 #   tags: [ "barnyard2" ]
 
-- name: config barnyard2 dir
+- name: generate barnyard2 dir
   file:
     path: /var/log/barnyard2
     state: directory
     owner: snort
     group: snort
-    mode: 5755
+    mode: 0755
+  tags: [ "barnyard2" ]
 
-# - name: Download barnyard2 from github
-#   git:
-#     repo: "https://github.com/shirkdog/barnyard2.git"
-#     dest: "{{ barnyard2.src_dir}}/barnyard2-{{ barnyard2.version }}"
-#     version: "{{ barnyard2.version }}"
+- name: generate woldo file
+  file:
+    path: /var/log/snort/barnyard2.waldo
+    state: touch
+    owner: snort
+    group: snort
+    mode: 0755
+  tags: [ "barnyard2" ]
+
+- name: Download barnyard2 from github
+  git:
+    repo: "https://github.com/firnsy/barnyard2"
+    dest: "{{ barnyard2.src_dir}}/barnyard2-{{ barnyard2.version }}"
+    version: "{{ barnyard2.version }}"
+  tags: [ "barnyard2" ]
+
+- name: run autogen.sh
+  command: ./autogen.sh
+  args:
+    chdir: "{{ barnyard2.src_dir}}/barnyard2-{{ barnyard2.version }}"
+    creates: "{{ barnyard2.src_dir}}/barnyard2-{{ barnyard2.version }}/configure"
+  tags: [ "barnyard2" ]
+
+# - name: ln -s /usr/include/dumbnet.h /usr/include/dnet.h
+#   command: ln -s /usr/include/dumbnet.h /usr/include/dnet.h
 #   tags: [ "barnyard2" ]
-#
-# - name: Copy barnyard2.pl
-#   copy:
-#     src: "{{ barnyard2.src_dir}}/barnyard2-{{ barnyard2.version }}/barnyard2.pl"
-#     dest: "/usr/local/bin/barnyard2.pl"
-#     owner: root
-#     group: root
-#     mode: 0755
+
+# - name: ldconfig
+#   command: ldconfig
 #   tags: [ "barnyard2" ]
-#
-# - name: Copy barnyard2 conf files
-#   copy:
-#     src: "{{ barnyard2.src_dir}}/barnyard2-{{ barnyard2.version }}/etc/{{ item }}"
-#     dest: "/etc/snort/{{ item }}"
-#     owner: snort
-#     group: snort
-#     mode: 0644
-#   with_items:
-#     - disablesid.conf
-#     - dropsid.conf
-#     - enablesid.conf
-#     - modifysid.conf
-#   tags: [ "barnyard2" ]
-#
-# - name: Generate /etc/snort/barnyard2.conf
-#   template:
-#     src: "barnyard2.conf.j2"
-#     dest: "/etc/snort/barnyard2.conf"
-#     owner: snort
-#     group: snort
-#     mode: 0644
-#   notify:
-#     - update rules
-#
-# - name: update rules every morning at 9
-#   cron:
-#     name: "update rules"
-#     minute: "0"
-#     hour: "9"
-#     job: "/usr/local/bin/barnyard2.pl -c /etc/snort/barnyard2.conf -l"
 
-################################################################################
+- name: ./configure --with-mysql --with-mysql-libraries=/usr/lib64
+  command: ./configure --with-mysql --with-mysql-libraries=/usr/lib64
+  args:
+    chdir: "{{ barnyard2.src_dir}}/barnyard2-{{ barnyard2.version }}"
+    creates: "{{ barnyard2.src_dir}}/barnyard2-{{ barnyard2.version }}/config.status"
+  tags: [ "barnyard2" ]
 
-#INTERFACE     = node['snort']['interface']
-#BY2_BRANCH    = node['barnyard2']['branch']
-#BY_CHECKSUM   = node['barnyard2']['checksum']
-#USER          = 'snort'.freeze
-#PASSWORD      = 'snort'.freeze
-#HOST          = 'localhost'.freeze
-#SRC_PATH      = Chef::Config[:file_cache_path]
-#
-#include_recipe 'git'
-#
-#directory '/var/log/barnyard2' do
-#  owner 'snort'
-#  group 'snort'
-#  mode '5755'
-#  action :create
-#end
-#
-#file '/var/log/snort/barnyard2.waldo' do
-#  owner 'snort'
-#  group 'snort'
-#  mode '0644'
-#  action :touch
-#end
-#
-## Barnyard2 dependencies
-#%w(
-#  mysql-server
-#  libmysqlclient-dev
-#  mysql-client
-#  autoconf
-#  libtool
-#).each do |pkg|
-#  package pkg
-#end
-#
-#git "#{SRC_PATH}/barnyard2-#{BY2_BRANCH}" do
-#  repository 'https://github.com/firnsy/barnyard2.git'
-#  reference BY2_BRANCH
-#  action :sync
-#end
-#
-#
-#link '/usr/include/dnet.h' do
-#  to '/usr/include/dumbnet.h'
-#end
-#
-#execute "Install barnyard2-#{BY2_BRANCH}" do
-#  cwd "#{SRC_PATH}/barnyard2-#{BY2_BRANCH}"
-#  command <<-EOF
-#    ./autogen.sh
-#    ./configure --with-mysql --with-mysql-libraries=/usr/lib/x86_64-linux-gnu
-#    make
-#    make install
-#  EOF
-#  creates '/usr/local/bin/barnyard2'
-#end
-#
-#link '/usr/sbin/barnyard2' do
-#  to '/usr/local/bin/barnyard2'
-#end
-#
-#execute 'ldconfig' do
-#  action :nothing
-#  subscribes :run, 'link[/usr/include/dnet.h]', :immediately
-#end
-#
-#template '/etc/snort/barnyard2.conf' do
-#  source 'barnyard2.conf.erb'
-#  owner 'snort'
-#  group 'snort'
-#  mode '0640'
-#  variables(
-#    interface:  INTERFACE,
-#    user:       USER,
-#    password:   PASSWORD,
-#    nost:       HOST
-#  )
-#  # notifies :restart, 'service[barnyard2]', :delayed
-#end
-#
-#execute 'Setup MySQL' do
-#  command <<-EOF
-#    echo 'create database snort;' | mysql
-#    mysql snort < #{SRC_PATH}/barnyard2-#{BY2_BRANCH}/schemas/create_mysql
-#    echo "CREATE USER 'snort'@'localhost' IDENTIFIED BY 'snort';" | mysql
-#    echo "grant create, insert, select, delete, update on snort.* to 'snort'@'localhost';" | mysql
-#  EOF
-#  creates '/var/lib/mysql/snort/'
-#  action :run
-#end
-#
-#case node['platform']
-#when 'ubuntu'
-#
-#  if node['platform_version'] >= '15'
-#    template '/lib/systemd/system/barnyard2.service' do
-#      source 'barnyard2.service.erb'
-#      owner 'root'
-#      group 'root'
-#      mode '0644'
-#      variables(
-#        interface: INTERFACE
-#      )
-#    end
-#
-#  elsif node['platform_version'] < '15'
-#
-#    template '/etc/init/barnyard2.conf' do
-#      source 'barnyard2.init.erb'
-#      owner 'root'
-#      group 'root'
-#      mode '0644'
-#      variables(
-#        interface: INTERFACE
-#      )
-#    end
-#
-#    service 'barnyard2' do
-#      supports start: true, stop: true, status: true, restart: true
-#      action [:enable, :start]
-#    end
-#
-#  end
-#end
+- name: make install barnyard2
+  command: "{{ item }}"
+  args:
+    chdir: "{{ barnyard2.src_dir}}/barnyard2-{{ barnyard2.version }}"
+    creates: "/usr/local/bin/barnyard2"
+  with_items:
+    - 'make'
+    - 'make install'
+  tags: [ "barnyard2" ]
 
+- name: Symlink /usr/local/bin/barnyard2 > /usr/sbin/barnyard2
+  file:
+    src: /usr/local/bin/barnyard2
+    dest: /usr/sbin/barnyard2
+    owner: root
+    group: root
+    state: link
+  tags: [ "barnyard2" ]
+
+- name: Configuring barnyard2 daemon
+  template:
+    src: "barnyard2.service.j2"
+    dest: "/lib/systemd/system/barnyard2.service"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - enable barnyard2
+    - restart barnyard2
+  tags: [ "barnyard2" ]
+
+- name: Generate /etc/snort/barnyard2.conf
+  template:
+    src: "barnyard2.conf.j2"
+    dest: "/etc/snort/barnyard2.conf"
+    owner: snort
+    group: snort
+    mode: 0644
+  notify:
+    - restart barnyard2
+  tags: [ "barnyard2" ]
