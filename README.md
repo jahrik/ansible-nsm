@@ -1,34 +1,40 @@
-# Ansible NSM tools for arch linux
+# ansible-nsm
 
-## Bro
+Ansible configuration to deploy Network Security Monitoring (NSM) tools on Arch Linux.
 
-[https://www.bro.org/](https://www.bro.org/)
+## Components
 
-* Installs dependencies (cmake, swig, cron)
-* Installs bro from github [https://github.com/bro/bro.git](https://github.com/bro/bro.git)
-* Configures bro
-* Runs 'broctl install' && 'broctl restart'
-* Adds cron entry to run 'broctl cron' every 5 minutes
+- **Zeek (formerly Bro)**: Installs dependencies, builds from source, configures, and manages via `broctl`. Sets up a 5-minute cron job for `broctl cron`.
+- **Snort / Pulledpork / Barnyard2**: Scaffolding for intrusion detection.
+- **MySQL**: Local database for storing alerts.
 
-Configure at var/localhost.yml
-```
+## Configuration
+
+Configure variables in your inventory or group/host vars (e.g., `vars/localhost.yml`):
+
+```yaml
+# Example variable overrides
 bro_interface: '{{ ansible_default_ipv4.interface }}'
 bro_log_dir: /var/log/bro
 ```
 
-Note:
+*Note: Zeek binaries are installed to `/usr/local/bro/bin`. Add this to your shell `$PATH` (e.g., `~/.bashrc` or `~/.zshrc`).*
 
-You'll want to add:
+## Usage
+
+```bash
+# Apply the playbook locally
+ansible-playbook playbook.yml -i inventory.ini --ask-become-pass
 ```
-export PATH=/usr/local/bro/bin:$PATH
+
+## Testing
+
+Run linting and testing in the managed Python virtual environment:
+
+```bash
+uv sync
+source .venv/bin/activate
+yamllint .
+ansible-lint
+molecule test
 ```
-to your ~/.bashrc or ~/.zshrc
-
-## Snort
-
-### Pulledpork
-
-### Barnyard2
-
-### Local MySQL (for storing alerts?)
-
