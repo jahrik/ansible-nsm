@@ -1,12 +1,22 @@
 ---
 bro_interface: '{{ ansible_default_ipv4.interface }}'
 bro_log_dir: /var/log/bro
+# List of local network CIDRs monitored/trusted by bro and snort.
+# Default covers the standard RFC1918 ranges; override per-environment
+# in your inventory vars if your monitored networks differ.
+nsm_home_net:
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
 barnyard2:
   version: master
   src_dir: /usr/local/src
   db_host: 127.0.0.1  #db host
   db_name: snort  #db name
-  db_pass: snort  #db password
+  # CHANGEME: sentinel only, never a real password. Override with
+  # Ansible Vault (e.g. secrets/{{ inventory_hostname }}.yml) or -e/--extra-vars
+  # for any real deployment.
+  db_pass: CHANGEME
   db_user: snort  #db user
   db_type: mysql  #defines the DB type...options are mysql or mariadb
   enable: true  #defines if barnyard2 should be installed and configured
