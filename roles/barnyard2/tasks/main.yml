@@ -100,6 +100,7 @@
     owner: snort
     group: snort
     mode: 0644
+  no_log: true  # barnyard2.conf.j2 renders barnyard2.db_pass; keep it out of logs
   notify:
     - restart barnyard2
   tags: [ "barnyard2" ]
