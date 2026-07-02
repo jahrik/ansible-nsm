@@ -1,0 +1,81 @@
+---
+- name: Install barnyard2 dependencies
+  ansible.builtin.package:
+    name:
+      - git
+      - autoconf
+      - libtool
+    state: present
+
+- name: Generate barnyard2 dir
+  ansible.builtin.file:
+    path: /var/log/barnyard2
+    state: directory
+    owner: snort
+    group: snort
+    mode: "0755"
+
+- name: Generate waldo file
+  ansible.builtin.file:
+    path: /var/log/snort/barnyard2.waldo
+    state: touch
+    owner: snort
+    group: snort
+    mode: "0755"
+
+- name: Download barnyard2 from github
+  ansible.builtin.git:
+    repo: "https://github.com/firnsy/barnyard2"
+    dest: "{{ barnyard2.src_dir }}/barnyard2-{{ barnyard2.version }}"
+    version: "{{ barnyard2.version }}"
+
+- name: Run autogen.sh
+  ansible.builtin.command: ./autogen.sh
+  args:
+    chdir: "{{ barnyard2.src_dir }}/barnyard2-{{ barnyard2.version }}"
+    creates: "{{ barnyard2.src_dir }}/barnyard2-{{ barnyard2.version }}/configure"
+
+- name: Configure barnyard2 with mysql support
+  ansible.builtin.command: ./configure --with-mysql --with-mysql-libraries=/usr/lib64
+  args:
+    chdir: "{{ barnyard2.src_dir }}/barnyard2-{{ barnyard2.version }}"
+    creates: "{{ barnyard2.src_dir }}/barnyard2-{{ barnyard2.version }}/config.status"
+
+- name: Make install barnyard2
+  ansible.builtin.command: "{{ item }}"
+  args:
+    chdir: "{{ barnyard2.src_dir }}/barnyard2-{{ barnyard2.version }}"
+    creates: /usr/local/bin/barnyard2
+  loop:
+    - make
+    - make install
+
+- name: Symlink /usr/local/bin/barnyard2 > /usr/sbin/barnyard2
+  ansible.builtin.file:
+    src: /usr/local/bin/barnyard2
+    dest: /usr/sbin/barnyard2
+    owner: root
+    group: root
+    state: link
+
+- name: Configuring barnyard2 daemon
+  ansible.builtin.template:
+    src: barnyard2.service.j2
+    dest: /lib/systemd/system/barnyard2.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Enable barnyard2
+    - Restart barnyard2
+
+- name: Generate /etc/snort/barnyard2.conf
+  ansible.builtin.template:
+    src: barnyard2.conf.j2
+    dest: /etc/snort/barnyard2.conf
+    owner: snort
+    group: snort
+    mode: "0644"
+  no_log: true # barnyard2.conf.j2 renders barnyard2.db_pass; keep it out of logs
+  notify:
+    - Restart barnyard2
