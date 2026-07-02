@@ -34,7 +34,9 @@
       tags:
         - nsm
         - nsm:pulledpork
-  when: ansible_facts['os_family'] == 'Archlinux'
+  when:
+    - ansible_facts['os_family'] == 'Archlinux'
+    - pulledpork.config | default(true)
   tags:
     - nsm
     - nsm:pulledpork
@@ -46,7 +48,9 @@
       tags:
         - nsm
         - nsm:barnyard2
-  when: ansible_facts['os_family'] == 'Archlinux'
+  when:
+    - ansible_facts['os_family'] == 'Archlinux'
+    - barnyard2.enable | default(true)
   tags:
     - nsm
     - nsm:barnyard2

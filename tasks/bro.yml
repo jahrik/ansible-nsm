@@ -10,7 +10,7 @@
 
 - name: Download bro from github
   ansible.builtin.git:
-    repo: "git://git.bro.org/bro"
+    repo: "https://github.com/zeek/zeek"
     dest: /usr/src/bro
     version: master
     recursive: true
@@ -69,5 +69,5 @@
 - name: Add cron entry to run broctl every 5 minutes
   ansible.builtin.cron:
     name: run broctl cron every 5 minutes
-    minute: "5"
+    minute: "*/5"
     job: /usr/local/bro/bin/broctl cron

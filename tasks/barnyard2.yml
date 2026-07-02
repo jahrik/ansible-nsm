@@ -9,7 +9,7 @@
 
 - name: Generate barnyard2 dir
   ansible.builtin.file:
-    path: /var/log/barnyard2
+    path: "{{ barnyard2.log_dir }}"
     state: directory
     owner: snort
     group: snort
@@ -17,7 +17,7 @@
 
 - name: Generate waldo file
   ansible.builtin.file:
-    path: /var/log/snort/barnyard2.waldo
+    path: "{{ barnyard2.waldo_file }}"
     state: touch
     owner: snort
     group: snort
