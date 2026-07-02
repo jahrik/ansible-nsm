@@ -5,7 +5,7 @@ galaxy_info:
   author: jahrik
   description: Build and configure Zeek (Bro), Snort, PulledPork, and Barnyard2 for Network Security Monitoring on Arch Linux
   issue_tracker_url: https://github.com/jahrik/ansible-nsm/issues
-  license: GPL-3.0-or-later
+  license: MIT
   min_ansible_version: '2.16'
   platforms:
     - name: ArchLinux
