@@ -80,7 +80,7 @@ CI runs lint and a syntax check only -- see [AGENTS.md](AGENTS.md) for why.
 
 ## License
 
-GPL-3.0-or-later
+MIT
 
 ## Author
 
