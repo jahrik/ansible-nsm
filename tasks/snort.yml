@@ -1,0 +1,118 @@
+---
+- name: Create snort group
+  ansible.builtin.group:
+    name: snort
+    state: present
+
+- name: Create snort user and assign to group
+  ansible.builtin.user:
+    name: snort
+    group: snort
+    shell: /usr/sbin/nologin
+
+- name: Create snort directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: snort
+    group: snort
+    mode: "0755"
+  loop:
+    - /etc/snort
+    - /etc/snort/rules
+    - /etc/snort/rules/iplists
+    - /etc/snort/preproc_rules
+    - /usr/local/lib/snort_dynamicrules
+    - /etc/snort/so_rules
+    - /var/log/snort
+    - /var/log/snort/archived_logs
+
+- name: Touch snort files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: touch
+    owner: snort
+    group: snort
+    mode: "0644"
+  loop:
+    - /etc/snort/rules/iplists/default.blacklist
+    - /etc/snort/rules/iplists/default.whitelist
+
+- name: Install snort dependencies
+  ansible.builtin.package:
+    name:
+      - libpcap
+      - pcre
+      - libdnet
+      - bison
+      - flex
+      - libdaq
+      - zlib
+      - ethtool
+    state: present
+
+- name: Download snort from source
+  ansible.builtin.get_url:
+    url: "https://snort.org/downloads/snort/snort-{{ snort.version }}.tar.gz"
+    dest: "{{ snort.src_dir }}/snort-{{ snort.version }}.tar.gz"
+    checksum: "{{ snort.checksum }}"
+    mode: "0644"
+
+- name: Extracting snort
+  ansible.builtin.unarchive:
+    src: "{{ snort.src_dir }}/snort-{{ snort.version }}.tar.gz"
+    dest: "{{ snort.src_dir }}"
+    creates: "{{ snort.src_dir }}/snort-{{ snort.version }}/configure"
+    remote_src: true
+
+- name: Build snort
+  ansible.builtin.command: "{{ item }}"
+  args:
+    chdir: "{{ snort.src_dir }}/snort-{{ snort.version }}"
+    creates: /usr/local/bin/snort
+  loop:
+    - ./configure
+    - make
+    - make install
+  notify:
+    - Copy files from source
+    - Copy dynamic-preprocessors from source
+
+- name: Symlink /usr/local/bin/snort > /usr/sbin/snort
+  ansible.builtin.file:
+    src: /usr/local/bin/snort
+    dest: /usr/sbin/snort
+    owner: root
+    group: root
+    state: link
+
+- name: Generate local.rules
+  ansible.builtin.template:
+    src: local.rules.j2
+    dest: /etc/snort/rules/local.rules
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Restart snort
+
+- name: Configuring snort daemon
+  ansible.builtin.template:
+    src: snort.service.j2
+    dest: /lib/systemd/system/snort.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Enable snort
+    - Restart snort
+
+- name: Generate /etc/snort/snort.conf
+  ansible.builtin.template:
+    src: snort.conf.j2
+    dest: /etc/snort/snort.conf
+    owner: snort
+    group: snort
+    mode: "0644"
+  notify:
+    - Restart snort

@@ -1,0 +1,73 @@
+---
+- name: Install bro dependencies
+  ansible.builtin.package:
+    name:
+      - cmake
+      - swig
+      - cronie
+      - postfix
+    state: present
+
+- name: Download bro from github
+  ansible.builtin.git:
+    repo: "https://github.com/zeek/zeek"
+    dest: /usr/src/bro
+    version: master
+    recursive: true
+
+- name: Build bro
+  ansible.builtin.command: "{{ item }}"
+  args:
+    chdir: /usr/src/bro
+    creates: /usr/local/bro
+  loop:
+    - ./configure
+    - make
+    - make install
+
+- name: Create bro log dir
+  ansible.builtin.file:
+    path: "{{ bro_log_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Generate /usr/local/bro/etc/node.cfg
+  ansible.builtin.template:
+    src: node.cfg.j2
+    dest: /usr/local/bro/etc/node.cfg
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Broctl install
+    - Broctl restart
+
+- name: Generate /usr/local/bro/etc/networks.cfg
+  ansible.builtin.template:
+    src: networks.cfg.j2
+    dest: /usr/local/bro/etc/networks.cfg
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Broctl install
+    - Broctl restart
+
+- name: Generate /usr/local/bro/etc/broctl.cfg
+  ansible.builtin.template:
+    src: broctl.cfg.j2
+    dest: /usr/local/bro/etc/broctl.cfg
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Broctl install
+    - Broctl restart
+
+- name: Add cron entry to run broctl every 5 minutes
+  ansible.builtin.cron:
+    name: run broctl cron every 5 minutes
+    minute: "*/5"
+    job: /usr/local/bro/bin/broctl cron

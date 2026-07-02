@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  role_name: nsm
+  namespace: jahrik
+  author: jahrik
+  description: Build and configure Zeek (Bro), Snort, PulledPork, and Barnyard2 for Network Security Monitoring on Arch Linux
+  issue_tracker_url: https://github.com/jahrik/ansible-nsm/issues
+  license: MIT
+  min_ansible_version: '2.16'
+  platforms:
+    - name: ArchLinux
+      versions:
+        - all
+  galaxy_tags:
+    - nsm
+    - security
+    - ids
+    - snort
+    - zeek
+    - bro
+dependencies: []

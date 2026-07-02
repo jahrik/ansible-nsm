@@ -1,6 +1,0 @@
----
-- name: broctl install
-  shell: '/usr/local/bro/bin/broctl install'
-
-- name: broctl restart
-  shell: '/usr/local/bro/bin/broctl restart'

@@ -1,0 +1,14 @@
+---
+- name: Install conky
+  ansible.builtin.package:
+    name: conky
+    state: present
+
+- name: Generate conky configs
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/home/{{ ansible_user }}/.{{ item }}"
+    mode: "0644"
+  loop:
+    - conkyrc_left
+    - conkyrc_right

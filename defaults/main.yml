@@ -1,0 +1,112 @@
+---
+bro_interface: "{{ ansible_facts['default_ipv4']['interface'] }}"
+bro_log_dir: /var/log/bro
+
+# List of local network CIDRs monitored/trusted by bro and snort.
+# Default covers the standard RFC1918 ranges; override per-environment
+# in your inventory vars if your monitored networks differ.
+nsm_home_net:
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+
+barnyard2:
+  version: master
+  src_dir: /usr/local/src
+  db_host: 127.0.0.1 # db host
+  db_name: snort # db name
+  # CHANGEME: sentinel only, never a real password. Override with
+  # Ansible Vault (e.g. secrets/{{ inventory_hostname }}.yml) or -e/--extra-vars
+  # for any real deployment.
+  db_pass: CHANGEME
+  db_user: snort # db user
+  db_type: mysql # defines the DB type...options are mysql or mariadb
+  enable: true # defines if barnyard2 should be installed and configured
+  log_dir: /var/log/snort
+  waldo_file: /var/log/snort/barnyard2.waldo
+  archive_dir: /var/log/snort/archived_logs
+
+pulledpork:
+  config: true # defines if pulledpork should be configured
+  version: master
+  src_dir: /usr/local/src
+  # rules_url: 'http://rules.emergingthreats.net/open/suricata/emerging.rules.tar.gz'
+
+snort:
+  version: 2.9.11
+  checksum: md5:4f3ee0c2ad330e487273016efd0c9d64
+  src_dir: /usr/local/src
+  daq_version: 2.0.6
+  interface: "{{ ansible_facts['default_ipv4']['interface'] }}" # defines snort interface to listen on
+  home_net: "{{ ansible_facts['default_ipv4']['network'] }}/24"
+  external_net: any
+  # external_net: '!$HOME_NET'  # define external networks..if snort_home_net is any then set this to any
+  rule_path: /etc/snort/rules
+  so_rule_path: /etc/snort/so_rules
+  preproc_rule_path: /etc/snort/preproc_rules
+  whitelist_path: /etc/snort/rules/iplists
+  blacklist_path: /etc/snort/rules/iplists
+  dynamicpreprocessor_directory: /usr/local/lib/snort_dynamicpreprocessor/
+  dynamicengine: /usr/local/lib/snort_dynamicengine/libsf_engine.so
+  dynamicdetection_directory: /usr/local/lib/snort_dynamicrules/
+  community_rules_package: community-rules.tar.gz
+  community_rules_url: https://snort.org/downloads/community
+  config_snort: true # defines if snort should be configured
+  options: "" # define additional snort options to pass to startup
+  output_syslog: true # defines if alerts should be sent to syslog
+  send_stats: true
+  startup: boot
+  stats_threshold: 1
+  rules:
+    - local.rules
+    - snort.rules
+    # Full upstream community-rules category list is intentionally left
+    # disabled below -- enable the categories relevant to your environment.
+    # - app-detect.rules
+    # - attack-responses.rules
+    # - backdoor.rules
+    # - bad-traffic.rules
+    # - blacklist.rules
+    # - botnet-cnc.rules
+    # - chat.rules
+    # - content-replace.rules
+    # - ddos.rules
+    # - dns.rules
+    # - dos.rules
+    # - exploit.rules
+    # - icmp.rules
+    # - imap.rules
+    # - misc.rules
+    # - multimedia.rules
+    # - netbios.rules
+    # - nntp.rules
+    # - p2p.rules
+    # - policy.rules
+    # - scada.rules
+    # - scan.rules
+    # - shellcode.rules
+    # - smtp.rules
+    # - snmp.rules
+    # - sql.rules
+    # - telnet.rules
+    # - tftp.rules
+    # - virus.rules
+    # - voip.rules
+    # - web-activex.rules
+    # - web-attacks.rules
+    # - web-client.rules
+    # - web-misc.rules
+    # - web-php.rules
+    # - x11.rules
+  dynamic_library_rules: []
+  preproc_rules: []
+
+# ---------------------------------------------------------------------------
+# Conky dashboard.
+# ---------------------------------------------------------------------------
+conky:
+  update_int: 2
+  color_01: FFCC99
+  color_02: 33CC33
+  color_03: 33CC99
+  interface: "{{ ansible_facts['default_ipv4']['interface'] }}"

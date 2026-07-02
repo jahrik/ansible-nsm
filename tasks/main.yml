@@ -1,0 +1,68 @@
+---
+# Dispatches each NSM tool behind its own tag so a single tool can be
+# re-applied on its own (e.g. `--tags nsm:snort`). All tasks target Arch
+# Linux only -- see AGENTS.md.
+
+- name: Zeek (Bro) network monitor
+  ansible.builtin.include_tasks:
+    file: bro.yml
+    apply:
+      tags:
+        - nsm
+        - nsm:bro
+  when: ansible_facts['os_family'] == 'Archlinux'
+  tags:
+    - nsm
+    - nsm:bro
+
+- name: Snort IDS
+  ansible.builtin.include_tasks:
+    file: snort.yml
+    apply:
+      tags:
+        - nsm
+        - nsm:snort
+  when: ansible_facts['os_family'] == 'Archlinux'
+  tags:
+    - nsm
+    - nsm:snort
+
+- name: PulledPork rule management
+  ansible.builtin.include_tasks:
+    file: pulledpork.yml
+    apply:
+      tags:
+        - nsm
+        - nsm:pulledpork
+  when:
+    - ansible_facts['os_family'] == 'Archlinux'
+    - pulledpork.config | default(true)
+  tags:
+    - nsm
+    - nsm:pulledpork
+
+- name: Barnyard2 alert output
+  ansible.builtin.include_tasks:
+    file: barnyard2.yml
+    apply:
+      tags:
+        - nsm
+        - nsm:barnyard2
+  when:
+    - ansible_facts['os_family'] == 'Archlinux'
+    - barnyard2.enable | default(true)
+  tags:
+    - nsm
+    - nsm:barnyard2
+
+- name: Conky dashboard
+  ansible.builtin.include_tasks:
+    file: conky.yml
+    apply:
+      tags:
+        - nsm
+        - nsm:conky
+  when: ansible_facts['os_family'] == 'Archlinux'
+  tags:
+    - nsm
+    - nsm:conky

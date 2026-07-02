@@ -1,0 +1,61 @@
+---
+- name: Install pulledpork dependencies
+  ansible.builtin.package:
+    name:
+      - perl
+      - cronie
+      - perl-lwp-protocol-https
+      - perl-crypt-ssleay
+      - perl-switch
+    state: present
+
+- name: Install pulledpork dependencies from aur
+  yaourt:
+    name: perl-bytes-random-secure
+    user: "{{ ansible_user }}"
+
+- name: Download pulledpork from github
+  ansible.builtin.git:
+    repo: "https://github.com/shirkdog/pulledpork.git"
+    dest: "{{ pulledpork.src_dir }}/pulledpork-{{ pulledpork.version }}"
+    version: "{{ pulledpork.version }}"
+
+- name: Copy pulledpork.pl
+  ansible.builtin.copy:
+    src: "{{ pulledpork.src_dir }}/pulledpork-{{ pulledpork.version }}/pulledpork.pl"
+    dest: /usr/local/bin/pulledpork.pl
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Copy pulledpork conf files
+  ansible.builtin.copy:
+    src: "{{ pulledpork.src_dir }}/pulledpork-{{ pulledpork.version }}/etc/{{ item }}"
+    dest: "/etc/snort/{{ item }}"
+    remote_src: true
+    owner: snort
+    group: snort
+    mode: "0644"
+  loop:
+    - disablesid.conf
+    - dropsid.conf
+    - enablesid.conf
+    - modifysid.conf
+
+- name: Generate /etc/snort/pulledpork.conf
+  ansible.builtin.template:
+    src: pulledpork.conf.j2
+    dest: /etc/snort/pulledpork.conf
+    owner: snort
+    group: snort
+    mode: "0644"
+  notify:
+    - Update rules
+
+- name: Update rules every morning at 9
+  ansible.builtin.cron:
+    name: update rules
+    minute: "0"
+    hour: "9"
+    job: /usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l
