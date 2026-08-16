@@ -12,7 +12,7 @@
   ansible.builtin.git:
     repo: "https://github.com/zeek/zeek"
     dest: /usr/src/bro
-    version: master
+    version: "{{ bro_version }}"
     recursive: true
 
 - name: Build bro

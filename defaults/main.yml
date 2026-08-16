@@ -1,6 +1,7 @@
 ---
 bro_interface: "{{ ansible_facts['default_ipv4']['interface'] }}"
 bro_log_dir: /var/log/bro
+bro_version: v8.2.1
 
 # List of local network CIDRs monitored/trusted by bro and snort.
 # Default covers the standard RFC1918 ranges; override per-environment
@@ -11,7 +12,7 @@ nsm_home_net:
   - 192.168.0.0/16
 
 barnyard2:
-  version: master
+  version: v2-1.13
   src_dir: /usr/local/src
   db_host: 127.0.0.1 # db host
   db_name: snort # db name
@@ -28,7 +29,7 @@ barnyard2:
 
 pulledpork:
   config: true # defines if pulledpork should be configured
-  version: master
+  version: v0.7.4
   src_dir: /usr/local/src
   # rules_url: 'http://rules.emergingthreats.net/open/suricata/emerging.rules.tar.gz'
 
